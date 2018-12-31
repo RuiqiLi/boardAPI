@@ -65,6 +65,7 @@ CREATE TABLE `t_user_avalon` (
   `user_id` int NOT NULL,
   `player_no` int NOT NULL,
   `user_role` varchar(4) NOT NULL DEFAULT "",
+  `can_do_mission` tinyint NOT NULL DEFAULT 0 comment '1：是；0：否',
   INDEX `avalon_room_id_INDEX` (`avalon_room_id`),
   UNIQUE `user_id_INDEX` (`user_id`)
 ) ENGINE = InnoDB;

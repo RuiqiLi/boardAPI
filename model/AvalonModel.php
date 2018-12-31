@@ -14,7 +14,7 @@ class AvalonModel {
   // Get all room data
   public function getStatus($uid) {
     $status_info = array('roomNo' => -1);
-    $sql = "SELECT avalon_room_id, player_no, user_role from t_user_avalon where user_id = $uid";
+    $sql = "SELECT avalon_room_id, player_no, user_role, can_do_mission from t_user_avalon where user_id = $uid";
     $row = $this->db->resultRow($sql);
     if (isset($row['avalon_room_id'])) {
       $room_no = $row['avalon_room_id'];
@@ -24,6 +24,7 @@ class AvalonModel {
         $status_info['roomNo'] = $room_no;
         $status_info['playerNo'] = $row['player_no'];
         $status_info['userRole'] = $row['user_role'];
+        $status_info['canDoMission'] = $row['can_do_mission'];
         $status_info['playerNum'] = $room_row['player_num'];
         $status_info['captainNo'] = $room_row['captain_no'];
         $status_info['delayMax'] = $room_row['delay_max'];
@@ -58,6 +59,14 @@ class AvalonModel {
       }
     }
     return $status_info;
+  }
+
+  public function setCanDoMission($room_no,$player_no) {
+    $sql = "SELECT avalon_room_id FROM t_user_avalon WHERE id = $room_no";
+    $row = $this->db->resultRow($sql);
+    $avalon_room_id = intval($row['avalon_room_id']);
+    $sql = "UPDATE t_user_avalon SET can_do_mission = 1 WHERE avalon_room_id = $avalon_room_id and player_no = $player_no";
+    $this->db->query($sql);
   }
 
   public function createRoom($player_num, $user_id) {

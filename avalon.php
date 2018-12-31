@@ -101,9 +101,9 @@ class Avalon extends Controller {
   }
 
   protected function status() {
-    $this->lock();
+    $this->mylock();
     $status_info = $this->avalon_model->getStatus($this->uid);
-    $this->unlock();
+    $this->myUnlock();
     $this->response(array(
       'ok' => true,
       'statusInfo' => $status_info
@@ -113,9 +113,9 @@ class Avalon extends Controller {
   protected function createRoom() {
     if (isset($_GET['playerNum'])) {
       $player_num = intval($_GET['playerNum']);
-      $this->lock();
+      $this->mylock();
       $room_no = $this->avalon_model->createRoom($player_num, $this->uid);
-      $this->unlock();
+      $this->myUnlock();
       $this->response(array(
         'ok' => true,
         'roomNo' => $room_no
@@ -128,9 +128,9 @@ class Avalon extends Controller {
   protected function dismissRoom() {
     if (isset($_GET['roomNo'])) {
       $room_no = intval($_GET['roomNo']);
-      $this->lock();
+      $this->mylock();
       $this->avalon_model->dismissRoom($room_no);
-      $this->unlock();
+      $this->myUnlock();
       $this->response(array('ok' => true));
     } else {
       $this->errorResponse('lackParams', '缺少roomNo参数');
@@ -141,11 +141,11 @@ class Avalon extends Controller {
     if (isset($_GET['roomNo']) && isset($_GET['playerNum'])) {
       $room_no = intval($_GET['roomNo']);
       $player_num = intval($_GET['playerNum']);
-      $this->lock();
+      $this->mylock();
       $this->checkRoomAutoUnlockResponse($room_no);
       $this->avalon_model->resetRoom($room_no, $player_num);
       $status_info = $this->avalon_model->getStatus($this->uid);
-      $this->unlock();
+      $this->myUnlock();
       $this->response(array(
         'ok' => true,
         'statusInfo' => $status_info
@@ -159,10 +159,10 @@ class Avalon extends Controller {
     if (isset($_GET['roomNo']) && isset($_GET['delayMax'])) {
       $room_no = intval($_GET['roomNo']);
       $delay_max = intval($_GET['delayMax']);
-      $this->lock();
+      $this->mylock();
       $this->checkRoomAutoUnlockResponse($room_no);
       $this->avalon_model->changeDelay($room_no, $delay_max);
-      $this->unlock();
+      $this->myUnlock();
       $this->response(array('ok' => true));
     } else {
       $this->errorResponse('lackParams', '缺少roomNo或delayMax参数');
@@ -173,10 +173,10 @@ class Avalon extends Controller {
     if (isset($_GET['roomNo']) && isset($_GET['badKnowOthers'])) {
       $room_no = intval($_GET['roomNo']);
       $bad_know_others = intval($_GET['badKnowOthers']);
-      $this->lock();
+      $this->mylock();
       $this->checkRoomAutoUnlockResponse($room_no);
       $this->avalon_model->changeBadKnowOthers($room_no, $bad_know_others);
-      $this->unlock();
+      $this->myUnlock();
       $this->response(array('ok' => true));
     } else {
       $this->errorResponse('lackParams', '缺少roomNo或badKnowOthers参数');
@@ -187,10 +187,10 @@ class Avalon extends Controller {
     if (isset($_GET['roomNo']) && isset($_GET['captainCanVote'])) {
       $room_no = intval($_GET['roomNo']);
       $captain_can_vote = intval($_GET['captainCanVote']);
-      $this->lock();
+      $this->mylock();
       $this->checkRoomAutoUnlockResponse($room_no);
       $this->avalon_model->changeCaptainCanVote($room_no, $captain_can_vote);
-      $this->unlock();
+      $this->myUnlock();
       $this->response(array('ok' => true));
     } else {
       $this->errorResponse('lackParams', '缺少roomNo或captainCanVote参数');
@@ -200,15 +200,15 @@ class Avalon extends Controller {
   protected function enterRoom() {
     if (isset($_GET['roomNo'])) {
       $room_no = intval($_GET['roomNo']);
-      $this->lock();
+      $this->mylock();
       $this->checkRoomAutoUnlockResponse($room_no);
       $check = $this->avalon_model->enterRoom($room_no, $this->uid);
       if (!$check) {
-        $this->unlock();
+        $this->myUnlock();
         $this->errorResponse('enterRoomFailed', '进入房间失败');
       }
       $status_info = $this->avalon_model->getStatus($this->uid);
-      $this->unlock();
+      $this->myUnlock();
       $this->response(array(
         'ok' => true,
         'statusInfo' => $status_info
@@ -221,14 +221,14 @@ class Avalon extends Controller {
   protected function gameStart() {
     if (isset($_GET['roomNo'])) {
       $room_no = intval($_GET['roomNo']);
-      $this->lock();
+      $this->mylock();
       $this->checkRoomAutoUnlockResponse($room_no);
       $status_info = $this->avalon_model->getStatus($this->uid);
       if ($status_info['turn'] == 0) {
         $this->avalon_model->gameStart($room_no, $status_info['playerNum']);
         $status_info = $this->avalon_model->getStatus($this->uid);
       }
-      $this->unlock();
+      $this->myUnlock();
       $this->response(array(
         'ok' => true,
         'statusInfo' => $status_info
@@ -243,11 +243,11 @@ class Avalon extends Controller {
       $room_no = intval($_GET['roomNo']);
       $turn = intval($_GET['turn']);
       $vote_type = intval($_GET['voteType']);
-      $this->lock();
+      $this->mylock();
       $this->checkRoomAutoUnlockResponse($room_no);
       $status_info = $this->avalon_model->getStatus($this->uid);
       if ($status_info['turn'] != $turn) {
-        $this->unlock();
+        $this->myUnlock();
         $this->response(array(
           'ok' => false,
           'why' => 'wrongTurn',
@@ -256,7 +256,7 @@ class Avalon extends Controller {
       }
       // 好人不能投坏票
       if ($vote_type == 0 && ($status_info['userRole'] == 'ml' || $status_info['userRole'] == 'pxwe' || $status_info['userRole'] == 'zc')) {
-        $this->unlock();
+        $this->myUnlock();
         $this->response(array(
           'ok' => false,
           'why' => 'goodGuy',
@@ -267,13 +267,13 @@ class Avalon extends Controller {
       $change = $this->avalon_model->doMission($room_no, $status_info['playerNum'], $turn, $name, $status_info['playerNo'], $vote_type, $status_info['missionStatus']);
       if ($change) {
         $status_info = $this->avalon_model->getStatus($this->uid);
-        $this->unlock();
+        $this->myUnlock();
         $this->response(array(
           'ok' => true,
           'statusInfo' => $status_info
         ));
       }
-      $this->unlock();
+      $this->myUnlock();
       $this->response(array(
         'ok' => false,
         'why' => 'repeat',
@@ -288,14 +288,14 @@ class Avalon extends Controller {
     if (isset($_GET['roomNo']) && isset($_GET['killPlayer'])) {
       $room_no = intval($_GET['roomNo']);
       $kill_player = intval($_GET['killPlayer']);
-      $this->lock();
+      $this->mylock();
       $this->checkRoomAutoUnlockResponse($room_no);
       $status_info = $this->avalon_model->getStatus($this->uid);
       if ($status_info['turn'] == 6 && $status_info['killPlayer'] == 0 && $status_info['userRole'] == 'ck') {
         $this->avalon_model->killPlayer($room_no, $kill_player);
         $status_info = $this->avalon_model->getStatus($this->uid);
       }
-      $this->unlock();
+      $this->myUnlock();
       $this->response(array(
         'ok' => true,
         'statusInfo' => $status_info
@@ -322,13 +322,21 @@ class Avalon extends Controller {
     if (isset($_GET['roomNo']) && isset($_GET['type'])) {
       $room_no = intval($_GET['roomNo']);
       $type = intval($_GET['type']);
-      $this->lock();
+      $this->mylock();
       $this->checkRoomAutoUnlockResponse($room_no);
+
+      if (isset($_GET['voters']) && $_GET['voters'] != "undefined") {
+        $voters = json_decode($_GET['voters'], true);
+        foreach ($voters as $voter) {
+          $this->avalon_model->setCanDoMission($room_no, intval($voter));
+        }
+      }
+
       $status_info = $this->avalon_model->getStatus($this->uid);
       $name = $this->getNameFromStatusInfo($status_info);
       $vote_status = $this->avalon_model->vote($room_no, $status_info['playerNo'], $name, $type, $status_info['playerNum'], $status_info['voteStatus']);
       $status_info['voteStatus'] = $vote_status;
-      $this->unlock();
+      $this->myUnlock();
       $this->response(array(
         'ok' => true,
         'statusInfo' => $status_info
@@ -341,10 +349,10 @@ class Avalon extends Controller {
   protected function voteStatus() {
     if (isset($_GET['roomNo'])) {
       $room_no = intval($_GET['roomNo']);
-      $this->lock();
+      $this->mylock();
       $this->checkRoomAutoUnlockResponse($room_no);
       $vote_status = $this->avalon_model->getVoteStatus($room_no);
-      $this->unlock();
+      $this->myUnlock();
       $this->response(array(
         'ok' => true,
         'voteStatus' => $vote_status['voteStatus'],
@@ -358,12 +366,12 @@ class Avalon extends Controller {
   protected function exitVote() {
     if (isset($_GET['roomNo'])) {
       $room_no = intval($_GET['roomNo']);
-      $this->lock();
+      $this->mylock();
       $this->checkRoomAutoUnlockResponse($room_no);
       $status_info = $this->avalon_model->getStatus($this->uid);
       $vote_status = $this->avalon_model->exitVote($room_no, $status_info['playerNo'], $status_info['voteStatus']);
       $status_info['voteStatus'] = $vote_status;
-      $this->unlock();
+      $this->myUnlock();
       $this->response(array(
         'ok' => true,
         'statusInfo' => $status_info
@@ -377,17 +385,17 @@ class Avalon extends Controller {
     if (isset($_GET['roomNo']) && isset($_GET['time'])) {
       $room_no = intval($_GET['roomNo']);
       $time = intval($_GET['time']);
-      $this->lock();
+      $this->mylock();
       $this->checkRoomAutoUnlockResponse($room_no);
       $eq = $this->avalon_model->compareTime($room_no, $time);
       if ($eq) {
-        $this->unlock();
+        $this->myUnlock();
         $this->response(array(
           'ok' => true
         ));
       }
       $status_info = $this->avalon_model->getStatus($this->uid);
-      $this->unlock();
+      $this->myUnlock();
       $this->response(array(
         'ok' => true,
         'statusInfo' => $status_info
@@ -397,18 +405,18 @@ class Avalon extends Controller {
     }
   }
 
-  protected function lock() {
+  protected function mylock() {
     parent::lock(parent::AVALON);
   }
 
-  protected function unlock() {
+  protected function myUnlock() {
     parent::unlock(parent::AVALON);
   }
 
   private function checkRoomAutoUnlockResponse($room_no) {
     $check = $this->avalon_model->checkRoom($room_no);
     if (!$check) {
-      $this->unlock();
+      $this->myUnlock();
       $this->errorResponse('checkRoomFailed', '房间不存在');
     }
   }

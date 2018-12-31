@@ -66,7 +66,7 @@ class Login extends Controller {
     $err_code = $pc->decryptData($encrypted_data, $iv, $data);
     if ($err_code == 0) {
       $this->recordUserInfo($data);
-      $session_id = randomFromDev(128);
+      $session_id = "jesse";
       $this->updateSession($session_id, $session_key, $open_id);
       $this->loadModel('user');
       $is_admin = $this->user_model->checkAdminByOpenId($open_id);
